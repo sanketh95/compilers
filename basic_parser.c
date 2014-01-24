@@ -24,43 +24,82 @@ expression()
 {
     /* expression -> term expression' */
 
-    term();
+    sum();
     expr_prime();
 }
 
 expr_prime()
 {
-    /* expression' -> PLUS term expression'
+    /* expression' -> MINUS sum expression'
      *              | epsilon
      */
 
-    if( match( PLUS ) )
+    if( match( MINUS ) )
     {
         advance();
-        term();
+        sum();
         expr_prime();
     }
 }
 
-term()
+sum()
 {
     /* term -> factor term' */
 
-    factor();
-    term_prime();
+    product();
+    sum_prime();
 }
 
-term_prime()
+sum_prime()
 {
     /* term' -> TIMES factor term'
      *       |   epsilon
      */
 
-    if( match( TIMES ) )
+    if( match( PLUS) )
     {
         advance();
+        product();
+        sum_prime();
+    }
+}
+
+
+product(){
+    /*
+    product -> fraction product_prime
+
+
+    */
+
+    fraction();
+    product_prime();
+}
+
+product_prime(){
+    if(match(TIMES)){
+        advance();
+        fraction();
+        product_prime();
+    }
+}
+
+fraction(){
+    /*
+        fraction -> factor fraction_prime
+    */
+      factor();
+      fraction_prime() ;
+}
+
+fraction_prime(){
+    /*
+    fraction_prime -> /factor fraction_prime | epsilon
+    */
+    if(match(DIV)){
+        advance();
         factor();
-        term_prime();
+        fraction_prime();
     }
 }
 
