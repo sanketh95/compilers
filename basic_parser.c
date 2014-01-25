@@ -20,6 +20,7 @@ statements()
         statements();			/* Do another statement. */
 }
 
+
 expression()
 {
     /* expression -> term expression' */
@@ -109,8 +110,10 @@ factor()
      *          |     LP expression RP
      */
 
-    if( match(NUM_OR_ID) )
+    if( match(NUM) || match(ID)){
+        printf("I'm advancing after matching a number or id\n");
         advance();
+    }
 
     else if( match(LP) )
     {
