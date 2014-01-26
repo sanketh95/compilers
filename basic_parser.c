@@ -3,12 +3,17 @@
 #include <stdio.h>
 #include "lex.h"
 
-statements()
+
+
+
+
+statement()
 {
-    /*  statements -> expression SEMI
-     *             |  expression SEMI statements
+    /*  statement -> expression SEMI
+     *             |  expression SEMI statement
      */
 
+/*
     expression();
 
     if( match( SEMI ) )
@@ -17,9 +22,78 @@ statements()
         fprintf( stderr, "%d: Inserting missing semicolon\n", yylineno );
 
     if( !match(EOI) )   
-        statements();			/* Do another statement. */
+        statements();			// Do another statement.
+
+*/
+    if(match(ID)){
+        advance();
+        if(match(ASSIGN)){              
+            advance();
+            expression();
+        }
+        else
+            fprintf(stderr, "Not a valid assignment\n");
+        
+    }
+    else if(match(IF)){
+        advance();
+        expression();
+        if(match(THEN)){
+            advance();
+            statement();
+        }
+        else
+            fprintf(stderr, "%d: Then missing\n", yylineno);
+    }
+    else if(match(WHILE)){
+        advance();
+        expression();
+        if(match(DO)){
+            advance();
+            statement();
+        }
+        else
+            fprintf(stderr, "%d: Do missing after while\n", yylineno);
+    }
+
+    else if(match(BEGIN)){
+        advance();
+        opt_statements();
+        if(match(END)){
+            printf("match end\n");
+            advance();
+        }
+        else 
+            fprintf(stderr, "%d End expected\n", yylineno);
+    }
+
 }
 
+
+opt_statements(){
+
+    /*
+        opt_statements -> statement_list | epsilon
+    */
+
+    statement_list();
+}
+
+statement_list(){
+    /*
+        statement_list -> statement statement_list_prime
+    */
+    statement();
+    statement_list_prime();
+}
+
+statement_list_prime(){
+    if(match(SEMI)){
+        advance();
+        statement();
+        statement_list_prime();
+    }
+}
 
 expression()
 {

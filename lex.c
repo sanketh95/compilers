@@ -45,6 +45,9 @@ int lex(void){
          yytext = current;
          yyleng = 1;
          switch( *current ){
+           case ':':
+            printf("ASSIGN\n");
+            return ASSIGN;
            case '=':
             printf("EQUALS\n");
            case '<':
