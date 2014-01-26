@@ -1,6 +1,8 @@
 #include "lex.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 
 
 char* yytext = ""; /* Lexeme (not '\0'
@@ -37,11 +39,14 @@ int lex(void){
          while(isspace(*current))
             ++current;
       }
+  //    printf("%s\n", current);
       for(; *current; ++current){
          /* Get the next token */
          yytext = current;
          yyleng = 1;
          switch( *current ){
+           case '=':
+            printf("EQUALS\n");
            case '<':
             printf("LT\n");
             return LT;
@@ -100,7 +105,7 @@ int lex(void){
                   if(first_char_is_digit)
                       return NUM;
                   else
-                      return ID;
+                      return find_keyword();
             }
             break;
          }
@@ -126,4 +131,37 @@ void advance(void){
    input symbol.                               */
 
     Lookahead = lex();
+}
+
+int find_keyword(){
+  char *temp;
+  int i;
+  temp = (char *) malloc(sizeof(char) * (yyleng+1));
+  temp[yyleng]='\0';
+  for(i=0;i<yyleng;i++){
+    temp[i]=yytext[i];
+  }
+  
+  /*Compare for keywords*/
+  if(!strcmp(temp,"if")){
+    return IF;
+  }
+  else if(!strcmp(temp,"then")){
+    return THEN;
+  }
+  else if(!strcmp(temp,"while")){
+    return WHILE;
+  }
+  else if(!strcmp(temp,"do")){
+    return DO;
+  }
+  else if(!strcmp(temp,"begin")){
+    return BEGIN;
+  }
+  else if(!strcmp(temp,"end")){
+    return END;
+  }
+  else{
+    return ID;
+  }
 }
