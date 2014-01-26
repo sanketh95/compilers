@@ -46,36 +46,36 @@ int lex(void){
          yyleng = 1;
          switch( *current ){
            case ':':
-            printf("ASSIGN\n");
+        //    printf("ASSIGN\n");
             return ASSIGN;
            case '=':
-            printf("EQUALS\n");
+         //   printf("EQUALS\n");
            case '<':
-            printf("LT\n");
+         //   printf("LT\n");
             return LT;
            case '>':
-            printf("GT\n");
+         //   printf("GT\n");
             return GT;
            case ';':
-            printf("semi colon\n");
+         //   printf("semi colon\n");
             return SEMI;
            case '+':
-           printf("plus\n");
+         //  printf("plus\n");
             return PLUS;
            case '-':
-           printf("minus\n");
+         //  printf("minus\n");
             return MINUS;
            case '*':
-           printf("mul\n");
+         //  printf("mul\n");
             return TIMES;
            case '/':
-           printf("div\n");
+         //  printf("div\n");
             return DIV;
            case '(':
-            printf("lp\n");
+         //   printf("lp\n");
             return LP;
            case ')':
-            printf("rp\n");
+         //   printf("rp\n");
             return RP;
            case '\n':
            case '\t':
