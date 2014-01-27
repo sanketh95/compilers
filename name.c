@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 
-char  *Names[] = { "t1", "t2", "t3", "t4", "t5", "t6", "t7" };   
+char  *Names[] = { "bh", "bl", "ch", "cl", "dh", "dl"};   
 char  **Namep  = Names;   
    
 char  *newname()   

@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "lex.h"
 #include <stdlib.h>
+#include "symbol.h"
+
 
 char *expression(void);
 char *great(void);
@@ -16,15 +18,16 @@ char *current_lexeme(void);
 extern char *newname( void       );
 extern void freename( char *name );
 
-#define ACCUMULATOR "t0"
+#define ACCUMULATOR "eax"
 
 int if_count = 0;
 int while_count = 0;
-
+FILE *f = NULL;
 /*Function definitions begin here*/
 
 statement()
 {
+
     /*  statement -> expression SEMI
      *             |  expression SEMI statement
      */
@@ -43,13 +46,15 @@ statement()
 */
     if(match(ID)){
     	char *var1 = current_lexeme(), *var2;
+        add_to_table(var1);
         advance();
         if(match(ASSIGN)){  
             advance();
             var2 = expression();
 
             //printf("%s = %s \n", var1,var2);
-            printf("MOV %s,%s\n", var2,var1);
+            //printf("MOV %s,%s\n", var2,var1);
+            fprintf(f,"MOV %s,%s\n", var2,var1);
 
 
             freename(var2);
@@ -68,8 +73,10 @@ statement()
         	fprintf(stderr, "%d: Invalid Expression\n",yylineno);
         	return;
         }
-        printf("CMP %s, $0\n",var1 );
-        printf("JLE Else%d\n",if_count);
+        //printf("CMP %s, $0\n",var1 );
+        //printf("JLE Else%d\n",if_count);
+        fprintf(f,"CMP %s, $0\n",var1 );
+        fprintf(f,"JLE Else%d\n",if_count);
         if(match(THEN)){
         	//printf("if(%s){\n", var1);
 
@@ -77,7 +84,8 @@ statement()
 
             advance();
             statement();
-            printf("Else%d:\n",if_count);
+            //printf("Else%d:\n",if_count);
+            fprintf(f,"Else%d:\n",if_count);
             //printf("}\n");
         }
         else
@@ -93,9 +101,14 @@ statement()
         	fprintf(stderr, "%d: Invalid Expression\n",yylineno);
         	return;
         }
-        printf("While%d:\n",while_count);
-        printf("CMP %s, $0\n", var);
-        printf("JLE Exit%d\n", while_count);
+       // printf("While%d:\n",while_count);
+       // printf("CMP %s, $0\n", var);
+       // printf("JLE Exit%d\n", while_count);
+
+        fprintf(f,"While%d:\n",while_count);
+        fprintf(f,"CMP %s, $0\n", var);
+        fprintf(f,"JLE Exit%d\n", while_count);
+
         if(match(DO)){
         	//printf("while\t(%s)\n", var);
         	//printf("do{\n");
@@ -104,8 +117,10 @@ statement()
             statement();
             //printf("}\n");
             freename(var);
-            printf("JMP While%d\n",while_count);
-            printf("Exit%d:\n",while_count);
+           // printf("JMP While%d\n",while_count);
+           // printf("Exit%d:\n",while_count);
+            fprintf(f,"JMP While%d\n",while_count);
+            fprintf(f,"Exit%d:\n",while_count);
         }
         else
             fprintf(stderr, "%d: Do expected after while\n", yylineno);
@@ -138,11 +153,16 @@ statement_list(){
     /*
         statement_list -> statement statement_list_prime
     */
+    if(!f){
+        f = fopen("temp.txt","w");
+    }   
+
     statement();
     while(match(SEMI)){
     	advance();
     	statement();
     }
+    //fclose(f);
 }
 /*
 statement_list_prime(){
@@ -206,7 +226,8 @@ char *sub(void){
 		advance();
 		var2 = sum();
 		//printf("%s = %s - %s\n", var1,var1,var2);
-		printf("SUB %s, %s\n",var2,var1 );
+		//printf("SUB %s, %s\n",var2,var1 );
+        fprintf(f,"SUB %s, %s\n",var2,var1 );
 		freename(var2);
 	}
 
@@ -220,7 +241,8 @@ char *sum(void){
 		advance();
 		var2 = product();
 		//printf("%s = %s + %s\n", var1,var1,var2);
-		printf("ADD %s, %s\n", var2,var1);
+		//printf("ADD %s, %s\n", var2,var1);
+        fprintf(f,"ADD %s, %s\n", var2,var1);
 		freename(var2);
 	}
 
@@ -234,7 +256,8 @@ char *product(void){
 		advance();
 		var2 = fraction();
 		//printf("%s = %s * %s\n", var1,var1,var2);
-		printf("IMUL %s, %s\n", var2, var1);
+		//printf("IMUL %s, %s\n", var2, var1);
+        fprintf(f,"IMUL %s, %s\n", var2, var1);
 		freename(var2);
 	}
 
@@ -248,9 +271,13 @@ char *fraction(void){
 		advance();
 		var2 = factor();
 		//printf("%s = %s / %s\n", var1,var1,var2);
-		printf("MOV %s,%s\n", var1, ACCUMULATOR );
-		printf("DIV %s\n", var2);
-		printf("MOV %s, %s\n", ACCUMULATOR,var1);
+		//printf("MOV %s,%s\n", var1, ACCUMULATOR );
+		//printf("DIV %s\n", var2);
+		//printf("MOV %s, %s\n", ACCUMULATOR,var1);
+
+        fprintf(f,"MOV %s,%s\n", var1, ACCUMULATOR );
+        fprintf(f,"DIV %s\n", var2);
+        fprintf(f,"MOV %s, %s\n", ACCUMULATOR,var1);
 		freename(var2);
 	}
 
@@ -260,7 +287,7 @@ char *fraction(void){
 char    *factor(void)
 {
     char *tempvar=NULL;
-
+    char *temp;
     if( match(ID) )
     {
 	/* Print the assignment instruction. The %0.*s conversion is a form of
@@ -271,11 +298,16 @@ char    *factor(void)
 	 * to print the string. The ".*" tells printf() to take the maximum-
 	 * number-of-characters count from the next argument (yyleng).
 	 */
-        printf("MOV %0.*s, %s\n",  yyleng, yytext ,tempvar=newname());
+        //printf("MOV %0.*s, %s\n",  yyleng, yytext ,tempvar=newname());
+        fprintf(f,"MOV %0.*s, %s\n",  yyleng, yytext ,tempvar=newname());
+        temp = current_lexeme();
+        add_to_table(temp);
+        free(temp);
         advance();
     }
     else if (match(NUM)){
-    	printf("MOV $%0.*s, %s\n",  yyleng, yytext ,tempvar=newname());
+    	//printf("MOV $%0.*s, %s\n",  yyleng, yytext ,tempvar=newname());
+        fprintf(f,"MOV $%0.*s, %s\n",  yyleng, yytext ,tempvar=newname());
         advance();
     }
     else if( match(LP) )
