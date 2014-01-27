@@ -134,6 +134,7 @@ void advance(void){
    input symbol.                               */
 
     Lookahead = lex();
+//    printf("%d\n", Lookahead);
 }
 
 int find_keyword(){

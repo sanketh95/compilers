@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "lex.h"
+#include <stdlib.h>
 
 char *expression(void);
 char *great(void);
@@ -10,8 +11,15 @@ char *product(void);
 char *fraction(void);
 char *factor(void);
 
+char *current_lexeme(void);
+
 extern char *newname( void       );
 extern void freename( char *name );
+
+#define ACCUMULATOR "t0"
+
+int if_count = 0;
+int while_count = 0;
 
 /*Function definitions begin here*/
 
@@ -34,45 +42,85 @@ statement()
 
 */
     if(match(ID)){
+    	char *var1 = current_lexeme(), *var2;
         advance();
-        if(match(ASSIGN)){              
+        if(match(ASSIGN)){  
             advance();
-            expression();
+            var2 = expression();
+
+            //printf("%s = %s \n", var1,var2);
+            printf("MOV %s,%s\n", var2,var1);
+
+
+            freename(var2);
+            free(var1);	
         }
         else
-            fprintf(stderr, "Not a valid assignment\n");
+            fprintf(stderr, "%d: Not a valid assignment\n",yylineno);
         
     }
     else if(match(IF)){
+    	char *var1;
+    	if_count++;
         advance();
-        expression();
+        var1 = expression();
+        if(!var1){
+        	fprintf(stderr, "%d: Invalid Expression\n",yylineno);
+        	return;
+        }
+        printf("CMP %s, $0\n",var1 );
+        printf("JLE Else%d\n",if_count);
         if(match(THEN)){
+        	//printf("if(%s){\n", var1);
+
+        	freename(var1);
+
             advance();
             statement();
+            printf("Else%d:\n",if_count);
+            //printf("}\n");
         }
         else
-            fprintf(stderr, "%d: Then missing\n", yylineno);
+            fprintf(stderr, "%d: Then expected after if\n", yylineno);
+        
     }
     else if(match(WHILE)){
+    	char *var;
+    	while_count++;
         advance();
-        expression();
+        var = expression();
+        if(!var){
+        	fprintf(stderr, "%d: Invalid Expression\n",yylineno);
+        	return;
+        }
+        printf("While%d:\n",while_count);
+        printf("CMP %s, $0\n", var);
+        printf("JLE Exit%d\n", while_count);
         if(match(DO)){
+        	//printf("while\t(%s)\n", var);
+        	//printf("do{\n");
+
             advance();
             statement();
+            //printf("}\n");
+            freename(var);
+            printf("JMP While%d\n",while_count);
+            printf("Exit%d:\n",while_count);
         }
         else
-            fprintf(stderr, "%d: Do missing after while\n", yylineno);
+            fprintf(stderr, "%d: Do expected after while\n", yylineno);
     }
 
     else if(match(BEGIN)){
+    	printf("begin\n");
         advance();
         opt_statements();
         if(match(END)){
-            printf("match end\n");
+            printf("end\n");
             advance();
         }
         else 
-            fprintf(stderr, "%d End expected\n", yylineno);
+            fprintf(stderr, "%d End expected begin\n", yylineno);
     }
 
 }
@@ -91,16 +139,26 @@ statement_list(){
         statement_list -> statement statement_list_prime
     */
     statement();
-    statement_list_prime();
+    while(match(SEMI)){
+    	advance();
+    	statement();
+    }
 }
-
+/*
 statement_list_prime(){
     if(match(SEMI)){
         advance();
         statement();
         statement_list_prime();
     }
+    else{
+    	if(!match(EOI)){
+    		statement_list();
+    	}
+    }
 }
+
+*/
 
 char *expression(void){
 	char *var1, *var2;
@@ -121,7 +179,7 @@ char *great(void){
 	while(match(GT)){
 		advance();
 		var2 = less();
-		printf("%s:%s > %s \n", var1,var1,var2 );
+		printf("%s=%s > %s \n", var1,var1,var2 );
 		freename(var2);
 	}
 
@@ -134,7 +192,7 @@ char *less(void){
 	while(match(LT)){
 		advance();
 		var2 = sub();
-		printf("%s:%s < %s\n", var1,var1,var2);
+		printf("%s=%s < %s\n", var1,var1,var2);
 		freename(var2);
 	}
 
@@ -147,7 +205,8 @@ char *sub(void){
 	while(match(MINUS)){
 		advance();
 		var2 = sum();
-		printf("%s: %s - %s\n", var1,var1,var2);
+		//printf("%s = %s - %s\n", var1,var1,var2);
+		printf("SUB %s, %s\n",var2,var1 );
 		freename(var2);
 	}
 
@@ -160,7 +219,8 @@ char *sum(void){
 	while(match(PLUS)){
 		advance();
 		var2 = product();
-		printf("%s: %s + %s\n", var1,var1,var2);
+		//printf("%s = %s + %s\n", var1,var1,var2);
+		printf("ADD %s, %s\n", var2,var1);
 		freename(var2);
 	}
 
@@ -173,7 +233,8 @@ char *product(void){
 	while(match(TIMES)){
 		advance();
 		var2 = fraction();
-		printf("%s: %s * %s\n", var1,var1,var2);
+		//printf("%s = %s * %s\n", var1,var1,var2);
+		printf("IMUL %s, %s\n", var2, var1);
 		freename(var2);
 	}
 
@@ -186,7 +247,10 @@ char *fraction(void){
 	while(match(DIV)){
 		advance();
 		var2 = factor();
-		printf("%s: %s / %s\n", var1,var1,var2);
+		//printf("%s = %s / %s\n", var1,var1,var2);
+		printf("MOV %s,%s\n", var1, ACCUMULATOR );
+		printf("DIV %s\n", var2);
+		printf("MOV %s, %s\n", ACCUMULATOR,var1);
 		freename(var2);
 	}
 
@@ -195,9 +259,9 @@ char *fraction(void){
 
 char    *factor(void)
 {
-    char *tempvar;
+    char *tempvar=NULL;
 
-    if( match(NUM) || match(ID) )
+    if( match(ID) )
     {
 	/* Print the assignment instruction. The %0.*s conversion is a form of
 	 * %X.Ys, where X is the field width and Y is the maximum number of
@@ -207,8 +271,11 @@ char    *factor(void)
 	 * to print the string. The ".*" tells printf() to take the maximum-
 	 * number-of-characters count from the next argument (yyleng).
 	 */
-
-        printf("    %s = %0.*s\n", tempvar = newname(), yyleng, yytext );
+        printf("MOV %0.*s, %s\n",  yyleng, yytext ,tempvar=newname());
+        advance();
+    }
+    else if (match(NUM)){
+    	printf("MOV $%0.*s, %s\n",  yyleng, yytext ,tempvar=newname());
         advance();
     }
     else if( match(LP) )
@@ -224,4 +291,16 @@ char    *factor(void)
 	fprintf( stderr, "%d: Number or identifier expected\n", yylineno );
 
     return tempvar;
+}
+
+char *current_lexeme(){
+  char *temp;
+  int i;
+  temp = (char *) malloc(sizeof(char) * (yyleng+1));
+  temp[yyleng]='\0';
+  for(i=0;i<yyleng;i++){
+    temp[i]=yytext[i];
+  }
+
+  return temp;
 }
