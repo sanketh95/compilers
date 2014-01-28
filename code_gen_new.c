@@ -18,10 +18,11 @@ char *current_lexeme(void);
 extern char *newname( void       );
 extern void freename( char *name );
 
-#define ACCUMULATOR "eax"
+#define ACCUMULATOR "\%ah"
 
 int if_count = 0;
 int while_count = 0;
+int comp_count=0;
 FILE *f = NULL;
 /*Function definitions begin here*/
 
@@ -54,7 +55,7 @@ statement()
 
             //printf("%s = %s \n", var1,var2);
             //printf("MOV %s,%s\n", var2,var1);
-            fprintf(f,"MOV %s,%s\n", var2,var1);
+            fprintf(f,"MOVB %s,%s\n", var2,var1);
 
 
             freename(var2);
@@ -75,7 +76,8 @@ statement()
         }
         //printf("CMP %s, $0\n",var1 );
         //printf("JLE Else%d\n",if_count);
-        fprintf(f,"CMP %s, $0\n",var1 );
+        fprintf(f, "MOVB $0, %s \n", ACCUMULATOR);
+        fprintf(f,"CMP %s, %s \n",var1 ,ACCUMULATOR);
         fprintf(f,"JLE Else%d\n",if_count);
         if(match(THEN)){
         	//printf("if(%s){\n", var1);
@@ -105,8 +107,9 @@ statement()
        // printf("CMP %s, $0\n", var);
        // printf("JLE Exit%d\n", while_count);
 
+        fprintf(f, "MOVB $0, %s \n", ACCUMULATOR);
         fprintf(f,"While%d:\n",while_count);
-        fprintf(f,"CMP %s, $0\n", var);
+        fprintf(f,"CMP %s, %s\n", var,ACCUMULATOR);
         fprintf(f,"JLE Exit%d\n", while_count);
 
         if(match(DO)){
@@ -184,9 +187,16 @@ char *expression(void){
 	char *var1, *var2;
 	var1 = great();
 	while(match(EQUALS)){
+		comp_count++;
 		advance();
 		var2 = great();
-		printf("%s = %s\n", var1, var2);
+		//printf("%s = %s == %s\n", var1, var2);
+		fprintf(f, "CMP %s, %s\n", var1,var2);
+		fprintf(f, "JE CMP0%d\n", comp_count, comp_count);
+		fprintf(f, "MOVB $0, %s\n",var1 );
+		fprintf(f, "JMP CMP1%d\n", comp_count);
+		fprintf(f, "CMP0%d:\nMOVB $1, %s\n", comp_count, var1 );
+		fprintf(f, "CMP1%d:\n", comp_count);
 		freename(var2);
 	}
 
@@ -197,9 +207,16 @@ char *great(void){
 	char *var1, *var2;
 	var1 = less();
 	while(match(GT)){
+		comp_count++;
 		advance();
 		var2 = less();
-		printf("%s=%s > %s \n", var1,var1,var2 );
+		//printf("%s=%s > %s \n", var1,var1,var2 );
+		fprintf(f, "CMP %s, %s\n", var1,var2);
+		fprintf(f, "JG CMP0%d\n", comp_count, comp_count);
+		fprintf(f, "MOVB $0, %s\n",var1 );
+		fprintf(f, "JMP CMP1%d\n", comp_count);
+		fprintf(f, "CMP0%d:\nMOVB $1, %s\n", comp_count, var1 );
+		fprintf(f, "CMP1%d:\n", comp_count);		
 		freename(var2);
 	}
 
@@ -210,9 +227,16 @@ char *less(void){
 	char *var1, *var2;
 	var1 = sub();
 	while(match(LT)){
+		comp_count++;
 		advance();
 		var2 = sub();
-		printf("%s=%s < %s\n", var1,var1,var2);
+		//printf("%s=%s < %s\n", var1,var1,var2);
+		fprintf(f, "CMP %s, %s\n", var1,var2);
+		fprintf(f, "JL CMP0%d\n", comp_count, comp_count);
+		fprintf(f, "MOVB $0, %s\n",var1 );
+		fprintf(f, "JMP CMP1%d\n", comp_count);
+		fprintf(f, "CMP0%d:\nMOVB $1, %s\n", comp_count, var1 );
+		fprintf(f, "CMP1%d:\n", comp_count);
 		freename(var2);
 	}
 
@@ -299,7 +323,7 @@ char    *factor(void)
 	 * number-of-characters count from the next argument (yyleng).
 	 */
         //printf("MOV %0.*s, %s\n",  yyleng, yytext ,tempvar=newname());
-        fprintf(f,"MOV %0.*s, %s\n",  yyleng, yytext ,tempvar=newname());
+        fprintf(f,"MOVB %0.*s, %s \n",  yyleng, yytext ,tempvar=newname());
         temp = current_lexeme();
         add_to_table(temp);
         free(temp);
@@ -307,7 +331,7 @@ char    *factor(void)
     }
     else if (match(NUM)){
     	//printf("MOV $%0.*s, %s\n",  yyleng, yytext ,tempvar=newname());
-        fprintf(f,"MOV $%0.*s, %s\n",  yyleng, yytext ,tempvar=newname());
+        fprintf(f,"MOVB $%0.*s, %s\n",  yyleng, yytext ,tempvar=newname());
         advance();
     }
     else if( match(LP) )

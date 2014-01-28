@@ -50,8 +50,10 @@ int lex(void){
             return ASSIGN;
            case '=':
          //   printf("EQUALS\n");
+           return EQUALS;
            case '<':
          //   printf("LT\n");
+              return LT;
             return LT;
            case '>':
          //   printf("GT\n");

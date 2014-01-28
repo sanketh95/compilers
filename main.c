@@ -17,13 +17,13 @@ main ()
 	f1 = fopen("final.s","w");
 	
 
-	fprintf(f1, "section .data\n");
+	fprintf(f1, ".data\n");
 	
 	for(i=0;i<sym_tab.cur_size;i++){
-		fprintf(f1, "\t\t%s:0\n", sym_tab.ids[i]);
+		fprintf(f1, "\t\t%s: .byte 0\n", sym_tab.ids[i]);
 	}
 
-	fprintf(f1,"section .text:\n\t\t globl main\n\nmain:\n\n");
+	fprintf(f1,".text\n.globl main\n\nmain:\n\n");
 
 	//printf(f,"main:\n\n main:\n\n");
 
