@@ -18,7 +18,7 @@ char *current_lexeme(void);
 extern char *newname( void       );
 extern void freename( char *name );
 
-#define ACCUMULATOR "\%ah"
+#define ACCUMULATOR "\%al"
 
 int if_count = 0;
 int while_count = 0;
@@ -53,7 +53,7 @@ statement()
             advance();
             var2 = expression();
             if(!var2){
-            	printf("%d: Expression expedted\n", yylineno);
+            	printf("%d: Expression expected\n", yylineno);
             	return;
             }
             //printf("%s = %s \n", var1,var2);
@@ -149,7 +149,8 @@ statement()
     }
     
     else if(match(EOI)){
-    	exit(0);
+    //	printf("thu\n");
+    	return;
     }
 
     else{
@@ -315,10 +316,10 @@ char *fraction(void){
 		//printf("MOV %s,%s\n", var1, ACCUMULATOR );
 		//printf("DIV %s\n", var2);
 		//printf("MOV %s, %s\n", ACCUMULATOR,var1);
-
-        fprintf(f,"MOV %s,%s\n", var1, ACCUMULATOR );
+		fprintf(f, "MOVB $0, %s \n", "\%ah");
+        fprintf(f,"MOVB %s,%s\n", var1, ACCUMULATOR );
         fprintf(f,"DIV %s\n", var2);
-        fprintf(f,"MOV %s, %s\n", ACCUMULATOR,var1);
+        fprintf(f,"MOVB %s, %s\n", ACCUMULATOR,var1);
 		freename(var2);
 	}
 

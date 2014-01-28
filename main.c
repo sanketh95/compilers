@@ -15,7 +15,12 @@ main ()
 	
 
 	f1 = fopen("final.s","w");
-	
+	if(!f1){
+		printf("Unable to open file. Exiting..\n");
+		return;
+	}
+
+	//printf("epic fail\n");
 
 	fprintf(f1, ".data\n");
 	
@@ -30,6 +35,7 @@ main ()
 	f = fopen("temp.txt","r+");
 	if(!f)
 		printf("error\n");
+
 	while( (ch=fgetc(f)) != EOF ){
 		//printf("s\n");
 		fprintf(f1,"%c", ch);
