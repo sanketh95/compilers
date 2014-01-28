@@ -77,7 +77,7 @@ statement()
         //printf("CMP %s, $0\n",var1 );
         //printf("JLE Else%d\n",if_count);
         fprintf(f, "MOVB $0, %s \n", ACCUMULATOR);
-        fprintf(f,"CMP %s, %s \n",var1 ,ACCUMULATOR);
+        fprintf(f,"CMP %s, %s \n",ACCUMULATOR,var1);
         fprintf(f,"JLE Else%d\n",if_count);
         if(match(THEN)){
         	//printf("if(%s){\n", var1);
@@ -109,7 +109,7 @@ statement()
 
         fprintf(f, "MOVB $0, %s \n", ACCUMULATOR);
         fprintf(f,"While%d:\n",while_count);
-        fprintf(f,"CMP %s, %s\n", var,ACCUMULATOR);
+        fprintf(f,"CMP %s, %s\n", ACCUMULATOR,var);
         fprintf(f,"JLE Exit%d\n", while_count);
 
         if(match(DO)){
@@ -211,7 +211,7 @@ char *great(void){
 		advance();
 		var2 = less();
 		//printf("%s=%s > %s \n", var1,var1,var2 );
-		fprintf(f, "CMP %s, %s\n", var1,var2);
+		fprintf(f, "CMP %s, %s\n", var2,var1);
 		fprintf(f, "JG CMP0%d\n", comp_count, comp_count);
 		fprintf(f, "MOVB $0, %s\n",var1 );
 		fprintf(f, "JMP CMP1%d\n", comp_count);
@@ -231,7 +231,7 @@ char *less(void){
 		advance();
 		var2 = sub();
 		//printf("%s=%s < %s\n", var1,var1,var2);
-		fprintf(f, "CMP %s, %s\n", var1,var2);
+		fprintf(f, "CMP %s, %s\n", var2,var1);
 		fprintf(f, "JL CMP0%d\n", comp_count, comp_count);
 		fprintf(f, "MOVB $0, %s\n",var1 );
 		fprintf(f, "JMP CMP1%d\n", comp_count);
