@@ -52,7 +52,10 @@ statement()
         if(match(ASSIGN)){  
             advance();
             var2 = expression();
-
+            if(!var2){
+            	printf("%d: Expression expedted\n", yylineno);
+            	return;
+            }
             //printf("%s = %s \n", var1,var2);
             //printf("MOV %s,%s\n", var2,var1);
             fprintf(f,"MOVB %s,%s\n", var2,var1);
@@ -65,9 +68,11 @@ statement()
             fprintf(stderr, "%d: Not a valid assignment\n",yylineno);
         
     }
+
     else if(match(IF)){
     	char *var1;
     	if_count++;
+    	int temp_if_count = if_count;
         advance();
         var1 = expression();
         if(!var1){
@@ -78,16 +83,17 @@ statement()
         //printf("JLE Else%d\n",if_count);
         fprintf(f, "MOVB $0, %s \n", ACCUMULATOR);
         fprintf(f,"CMP %s, %s \n",ACCUMULATOR,var1);
-        fprintf(f,"JLE Else%d\n",if_count);
+        fprintf(f,"JLE Else%d\n",temp_if_count);
         if(match(THEN)){
         	//printf("if(%s){\n", var1);
-
+        	
+        	
         	freename(var1);
 
             advance();
             statement();
             //printf("Else%d:\n",if_count);
-            fprintf(f,"Else%d:\n",if_count);
+            fprintf(f,"Else%d:\n",temp_if_count);
             //printf("}\n");
         }
         else
@@ -97,6 +103,7 @@ statement()
     else if(match(WHILE)){
     	char *var;
     	while_count++;
+    	int temp_while_count = while_count;
         advance();
         var = expression();
         if(!var){
@@ -108,9 +115,9 @@ statement()
        // printf("JLE Exit%d\n", while_count);
 
         fprintf(f, "MOVB $0, %s \n", ACCUMULATOR);
-        fprintf(f,"While%d:\n",while_count);
+        fprintf(f,"While%d:\n",temp_while_count);
         fprintf(f,"CMP %s, %s\n", ACCUMULATOR,var);
-        fprintf(f,"JLE Exit%d\n", while_count);
+        fprintf(f,"JLE Exit%d\n", temp_while_count);
 
         if(match(DO)){
         	//printf("while\t(%s)\n", var);
@@ -122,8 +129,8 @@ statement()
             freename(var);
            // printf("JMP While%d\n",while_count);
            // printf("Exit%d:\n",while_count);
-            fprintf(f,"JMP While%d\n",while_count);
-            fprintf(f,"Exit%d:\n",while_count);
+            fprintf(f,"JMP While%d\n",temp_while_count);
+            fprintf(f,"Exit%d:\n",temp_while_count);
         }
         else
             fprintf(stderr, "%d: Do expected after while\n", yylineno);
@@ -140,6 +147,16 @@ statement()
         else 
             fprintf(stderr, "%d End expected begin\n", yylineno);
     }
+    
+    else if(match(EOI)){
+    	exit(0);
+    }
+
+    else{
+    	fprintf(stderr, "%d: Statement Expected\n", yylineno);
+    	exit(1);
+    }
+    
 
 }
 
