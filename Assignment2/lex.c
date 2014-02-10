@@ -240,8 +240,10 @@ int lex(void){
                }
 
                yyleng = current - yytext;
-               if(invalid_num)
+               if(invalid_num){
+                  printf("Invalid Lexeme at line: %d\n", yylineno);
                   return ERR;
+                }
                else
                   if(first_char_is_digit){
                       add(NUM);

@@ -17,6 +17,8 @@ while( (tok=lex()) != EOI){
 		//printf("Invalid Lexeme %0.*s at line: %d\n",yyleng, yytext, yylineno);
 	}
 }
+
+printf("Symbol Table\n\n");
 pprint();
 
 }
