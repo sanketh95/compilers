@@ -351,8 +351,5 @@ void add(int tc){
   for(i=0;i<yyleng;i++){
     temp[i]=yytext[i];
   }
-  if(tc == ID)
-    add_to_table(temp, tc);
-  else
     add_to_table_no_check(temp, tc);
 }
