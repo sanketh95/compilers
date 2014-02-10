@@ -225,8 +225,7 @@ int lex(void){
                   else{
                       //printf("%0.*s\n",yyleng, yytext );
                       tc = find_keyword();
-                      if(tc == ID)
-                        add(tc);
+                      add(tc);
                       return tc;
                   }
             }
@@ -352,6 +351,8 @@ void add(int tc){
   for(i=0;i<yyleng;i++){
     temp[i]=yytext[i];
   }
-
-  add_to_table(temp, tc);
+  if(tc == ID)
+    add_to_table(temp, tc);
+  else
+    add_to_table_no_check(temp, tc);
 }

@@ -35,3 +35,12 @@ void pprint(){
 		printf("%s\t%d\n", sym_tab.row[i].lexeme,sym_tab.row[i].token_class);
 	}
 }
+
+void add_to_table_no_check(char *s, int token_class){
+	if(sym_tab.cur_size == MAX_SIZE)
+		return;
+	sym_tab.row[sym_tab.cur_size].lexeme = (char *)malloc(sizeof(char) * (strlen(s) + 1) );
+	strcpy(sym_tab.row[sym_tab.cur_size].lexeme,s);
+	sym_tab.row[sym_tab.cur_size].token_class = token_class;
+	sym_tab.cur_size++;	
+}

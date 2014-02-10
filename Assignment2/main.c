@@ -2,6 +2,7 @@
 #include "lex.h"
 #include "symbol.h"
 
+
 extern yyleng;
 extern char * yytext;
 
