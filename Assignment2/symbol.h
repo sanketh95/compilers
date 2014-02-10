@@ -1,5 +1,5 @@
 
-#define MAX_SIZE 50
+#define MAX_SIZE 1000
 
 struct table_row{
 	int token_class;

@@ -11,6 +11,8 @@ int yyleng   = 0;  /* Lexeme length.           */
 int yylineno = 0;  /* Input line number        */
 int define_found=0;  
 
+void add(int);
+
 int lex(void){
 
    static char input_buffer[1024];
@@ -47,110 +49,144 @@ int lex(void){
          yyleng = 1;
          switch( *current ){
            case ',':
+            add(COMMA);
             return COMMA;
            case '=':
         //    printf("ASSIGN\n");
             if(*(current+1) == '='){
                 yyleng=2;
+                add(EQUALS);
                 return EQUALS;
             }
+            add(ASSIGN);
             return ASSIGN;
            case '<':
          //   printf("LT\n");
             if(*(current+1) == '='){
                 yyleng=2;
+                add(LTE);
                 return LTE;
             }
+            add(LT);
             return LT;
            case '>':
          //   printf("GT\n");
             if(*(current+1) == '='){
                 yyleng=2;
+                add(GTE);
                 return GTE;
             }
+            add(GT);
             return GT;
            case ';':
          //   printf("semi colon\n");
+           add(SEMI);
             return SEMI;
            case '+':
          //  printf("plus\n");
             if(*(current+1) == '+'){
               yyleng=2;
+              add(PP);
               return PP;
             }
             else if(*(current+1) == '='){
               yyleng=2;
+              add(PE);
               return PE;
             }
+            add(PLUS);
             return PLUS;
            case '-':
               if(*(current+1) == '-'){
                 yyleng=2;
+                add(MM);
                 return MM;
               }
             else if(*(current+1) == '='){
               yyleng=2;
+              add(ME);
               return ME;
             }
             else if(*(current+1) == '>'){
               yyleng=2;
+              add(RF);
               return RF;
             }
          //  printf("minus\n");
+            add(MINUS);
             return MINUS;
            case '*':
             if(*(current+1) == '='){
               yyleng=2;
+              add(TE);
               return TE;
             }
          //  printf("mul\n");
+            add(TIMES);
             return TIMES;
            case '/':
          //  printf("div\n");
             if(*(current+1) == '='){
               yyleng=2;
+              add(DE);
               return DE;
             }
+            add(DIV);
             return DIV;
            case '(':
          //   printf("lp\n");
+            add(LP);
             return LP;
            case ')':
          //   printf("rp\n");
+            add(RP);
             return RP;
            case '{':
+           add(LF);
             return LF;
            case '}':
+            add(RF);
             return RF;
            case '[':
+            add(LS);
             return LS;
            case ']':
+            add(RS);
             return RS;
            case '\"':
+            add(DQ); 
             return DQ;
            case '\'':
+           add(SQ);
             return SQ;
            case '%':
             if(*(current+1) == '='){
               yyleng=2;
+              add(MODEQ);
               return MODEQ;
             }
+            add(MOD);
             return MOD;
            case '&':
             if(*(current+1) == '&'){
               yyleng=2;
+              add(AND);
               return AND;
             }
            case '|':
             if(*(current+1) == '|'){
               yyleng=2;
+              add(OR);
               return OR;
             }
            case '!':
+            add(NOT);
             return NOT;
            case '.':
+            add(DOT);
             return DOT;
            case '\\':
+            add(BS);
             return BS;
            case '\n':
            case '\t':
