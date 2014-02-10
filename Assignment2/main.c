@@ -10,9 +10,12 @@ void main(){
 
 st sym_tab;
 sym_tab.cur_size=0;
+int tok;
 
-while(lex() != EOI){
-	//printf("%0.*s\n", yyleng,yytext);
+while( (tok=lex()) != EOI){
+	if(tok == ERR)	{
+		//printf("Invalid Lexeme %0.*s at line: %d\n",yyleng, yytext, yylineno);
+	}
 }
 pprint();
 

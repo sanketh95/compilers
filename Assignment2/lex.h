@@ -67,6 +67,9 @@
 #define SQ 67
 #define BS 68
 #define CONSTANT 69
+#define CHARACTER 70
+#define STRING 71
+#define ERR 72
 
 extern char *yytext;		/* in lex.c			*/
 extern int yyleng;

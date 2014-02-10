@@ -154,11 +154,36 @@ int lex(void){
             add(RS);
             return RS;
            case '\"':
-            add(DQ); 
-            return DQ;
+           // add(DQ); 
+            while(*(++current) != '\"'){
+              if(*current == '\n' || !(*current)){
+                yytext=current;
+                printf("Missing \" at line: %d\n", yylineno);
+                return ERR;
+              }
+            }
+            yytext++;
+            yyleng = current-yytext;
+            add(STRING);
+            yytext = current;
+            yyleng=1;
+            return STRING;
            case '\'':
-           add(SQ);
-            return SQ;
+            if(*(current+2) == '\''){
+              yyleng=1;
+              yytext++;
+              add(CHARACTER);
+              yytext=current+2;
+              yyleng=1;
+              return CHARACTER;
+            }
+            else{
+              
+              yytext=(current+1);
+              yyleng=1;
+              printf("Missing \' at line: %d\n", yylineno);
+              return ERR; 
+            }
            case '%':
             if(*(current+1) == '='){
               yyleng=2;
@@ -194,7 +219,7 @@ int lex(void){
             break;
            default:
             if(!isalnum(*current) && *current!='#')
-               fprintf(stderr, "Invalid char %c\n", *current);
+               fprintf(stderr, "Invalid char %c at line: %d\n", *current, yylineno);
             else{               
 
               if(*current == '#')
@@ -216,7 +241,7 @@ int lex(void){
 
                yyleng = current - yytext;
                if(invalid_num)
-                  fprintf(stderr, "Neither number nor id\n");
+                  return ERR;
                else
                   if(first_char_is_digit){
                       add(NUM);
