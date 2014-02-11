@@ -252,7 +252,9 @@ int lex(void){
                   else{
                       //printf("%0.*s\n",yyleng, yytext );
                       tc = find_keyword();
-                      add(tc);
+                      if(tc == ERR)
+                        printf("Invalid lexeme at line no: %d\n", yylineno);
+                      if(tc != DEFINE && tc != ERR) add(tc);
                       return tc;
                   }
             }
@@ -358,13 +360,21 @@ int find_keyword(){
     return VOLATILE;
   else if(!strcmp(temp,"#define")){
     define_found=1;
+    add(DEFINE);
     lex();
+    return DEFINE;
+  }
+  else if(!strcmp(temp, "#include")){
+    return INCLUDE;
   }
   else{
     if(define_found){
         define_found=0;
         return CONSTANT;
     }
+ //   printf("%c\n", *yytext);
+    if(*yytext == '#')
+      return ERR;
     return ID;
   }
 }

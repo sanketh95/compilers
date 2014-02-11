@@ -70,6 +70,8 @@
 #define CHARACTER 70
 #define STRING 71
 #define ERR 72
+#define DEFINE 73
+#define INCLUDE 74
 
 extern char *yytext;		/* in lex.c			*/
 extern int yyleng;
