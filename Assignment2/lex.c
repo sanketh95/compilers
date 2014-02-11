@@ -20,6 +20,7 @@ int lex(void){
    int first_char_is_digit = 0;
    int invalid_num= 0;
    int tc;
+   int dot_found=0;
 
    current = yytext + yyleng; /* Skip current
                                  lexeme        */
@@ -48,6 +49,9 @@ int lex(void){
          yytext = current;
          yyleng = 1;
          switch( *current ){
+           /*
+           case ''
+           */
            case ',':
             add(COMMA);
             return COMMA;
@@ -126,6 +130,14 @@ int lex(void){
             return TIMES;
            case '/':
          //  printf("div\n");
+          /*  
+            if(*(current+1) == '/'){
+              yytext = NULL;
+              yyleng = 0;              
+              return ERR;
+            }
+          */
+            
             if(*(current+1) == '='){
               yyleng=2;
               add(DE);
@@ -212,6 +224,7 @@ int lex(void){
             return DOT;
            case '\\':
             add(BS);
+
             return BS;
            case '\n':
            case '\t':
@@ -229,12 +242,19 @@ int lex(void){
                   first_char_is_digit = 1;
                
                 current++;
-               while(isalnum(*current) || *current=='_' ){
+               while(isalnum(*current) || *current=='_' || *current =='.' ){
                   if(isalpha(*current) || *current == '_' ){
 
                     if(first_char_is_digit && !invalid_num)
                         invalid_num = 1;
                   }
+
+                  if(*current == '.'){
+                      if(!dot_found)
+                        dot_found = 1;
+                      else invalid_num = 1; 
+                  }
+
                   
                   ++current;
                }
@@ -246,6 +266,10 @@ int lex(void){
                 }
                else
                   if(first_char_is_digit){
+                      if(dot_found){
+                        add(DECIMAL);
+                        return DECIMAL;
+                      }
                       add(NUM);
                       return NUM;
                     }

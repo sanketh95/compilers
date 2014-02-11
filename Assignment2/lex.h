@@ -72,6 +72,7 @@
 #define ERR 72
 #define DEFINE 73
 #define INCLUDE 74
+#define DECIMAL 75
 
 extern char *yytext;		/* in lex.c			*/
 extern int yyleng;
