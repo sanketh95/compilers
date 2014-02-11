@@ -130,13 +130,13 @@ int lex(void){
             return TIMES;
            case '/':
          //  printf("div\n");
-          /*  
+           
             if(*(current+1) == '/'){
-              yytext = NULL;
-              yyleng = 0;              
-              return ERR;
+                while( *(++current) != '\0'  );
+                yyleng = current - yytext;
+                return ERR;
             }
-          */
+          
             
             if(*(current+1) == '='){
               yyleng=2;
@@ -250,8 +250,13 @@ int lex(void){
                   }
 
                   if(*current == '.'){
-                      if(!dot_found)
+                      if(!dot_found){
                         dot_found = 1;
+                        if(!isdigit(*(current+1)))  //
+                            //printf("Invalid Lexeme at line: %d\n", yylineno); //
+                            invalid_num=1;
+                            //break;
+                      }
                       else invalid_num = 1; 
                   }
 
@@ -270,6 +275,7 @@ int lex(void){
                         add(DECIMAL);
                         return DECIMAL;
                       }
+
                       add(NUM);
                       return NUM;
                     }
